@@ -1,4 +1,4 @@
-from shapely.geometry import Polygon, Point
+from shapely.geometry import Polygon, Point, LineString
 from shapely.affinity import rotate, scale, translate
 import matplotlib.pyplot as plt
 import numpy as np
@@ -69,6 +69,43 @@ class Track():
     
         return(poly)
 
+    def calculate_center_line(self, random_numb):
+
+        print(random_numb,self.orientation)
+        if random_numb == -1:
+
+            if self.orientation == 0:
+                new_val = self.center_line[-1] + np.array((0.5,0.5))
+            elif self.orientation == 1:
+                new_val = self.center_line[-1] + np.array((-0.5,0.5))
+            elif self.orientation == 2:
+                new_val = self.center_line[-1] + np.array((-0.5,-0.5))
+            else:
+                new_val = self.center_line[-1] + np.array((0.5,-0.5))
+
+        elif random_numb == 0:
+
+            if self.orientation == 0:
+                new_val = self.center_line[-1] + np.array((1,0))
+            elif self.orientation == 1:
+                new_val = self.center_line[-1] + np.array((0,1))
+            elif self.orientation == 2:
+                new_val = self.center_line[-1] + np.array((-1,0))
+            else:
+                new_val = self.center_line[-1] + np.array((0,-1))
+
+        else:
+            if self.orientation == 0:
+                new_val = self.center_line[-1] + np.array((0.5,-0.5))
+            elif self.orientation == 1:
+                new_val = self.center_line[-1] + np.array((0.5,0.5))
+            elif self.orientation == 2:
+                new_val = self.center_line[-1] + np.array((-0.5,0.5))
+            else:
+                new_val = self.center_line[-1] + np.array((-0.5,-0.5))
+
+        return new_val
+
     def construct_track(self, screen_size):
 
         self.orientation = 0
@@ -76,6 +113,7 @@ class Track():
         track = self.straight()
 
         self.curr_coords = [1,0]
+        self.center_line = [np.array((0,0.5)),np.array((1,0.5))]
         for i in range(self.n_elements-1):
         
             random_numb = np.random.choice([-1,0,1], p = [1/4,1/2,1/4])
@@ -104,6 +142,8 @@ class Track():
             elif self.orientation == 3:
                 self.curr_coords[1] += -1
 
+            self.center_line.append(self.calculate_center_line(random_numb))
+
         track_bounds = track.bounds
         x_fact = screen_size[0]/(track_bounds[2]-track_bounds[0]) * 2/3
         y_fact = screen_size[1]/(track_bounds[3]-track_bounds[1]) * 2/3
@@ -114,9 +154,14 @@ class Track():
         track = scale(track, xfact= factor, yfact= factor, origin='centroid')
         track = translate(track, xoff= screen_size[0]/2,yoff = screen_size[1]/2)
 
+        self.center_line_shapely = LineString(self.center_line)
+        self.center_line_shapely = translate(scale(self.center_line_shapely,xfact=factor, yfact=factor, origin = track_centroid),\
+             xoff= screen_size[0]/2,yoff = screen_size[1]/2)
+        self.center_list  = list(self.center_line_shapely.coords)
+
         self.starting_position = translate(scale(Point(0.05,0.5),xfact=factor, yfact=factor, origin = track_centroid),\
              xoff= screen_size[0]/2,yoff = screen_size[1]/2)
-             
+
         return track
 
 

@@ -1,6 +1,7 @@
 import numpy as np
 
 from shapely.geometry import Point, LineString
+from shapely.ops import nearest_points, split
 
 class Agent():
 
@@ -27,6 +28,14 @@ class Agent():
         
         else:
             self.calculate_surroundings(track)
+
+    def on_center_line(self,track):
+
+        ag_end = Point(self.position)
+        pos_on_line, _ = nearest_points(track.center_line_shapely,ag_end)
+
+        #print(list(pos_on_line.coords)[0], self.position,list(track.center_line_shapely.coords))
+        return(list(pos_on_line.coords)[0])
         
         
 

@@ -5,7 +5,8 @@ import numpy as np
 from utils.agent import Agent
 from utils.build_track import Track
 from utils.move_agents import move_agents
-from utils.constants import track_color, background_color
+from utils.calculate_final_scores import calculate_final_scores
+from utils.constants import track_color, background_color, center_color
 
 screen_size = np.array([800,600])
 pygame.init()
@@ -26,6 +27,7 @@ gameOn = True
 while gameOn:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
+            calculate_final_scores(track, agents)
             gameOn = False
     
     screen.fill(background_color)
@@ -33,7 +35,8 @@ while gameOn:
     pygame.draw.polygon(screen, color = track_color, points = track.exterior_list)
 
     move_agents(screen,track, agents, alive_agents)
-
+    
+    pygame.draw.lines(screen, color = center_color, closed = False,points = track.center_list)
 
 
     pygame.display.update()
