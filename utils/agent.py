@@ -1,7 +1,12 @@
 import numpy as np
 
+import torch
+from torch import FloatTensor
+
 from shapely.geometry import Point, LineString
 from shapely.ops import nearest_points, split
+
+from .neural_network import Network
 
 class Agent():
 
@@ -17,9 +22,16 @@ class Agent():
         self.n_sight_lines = 8
         self.distances = np.zeros(self.n_sight_lines)
         self.sight_lines = [ [] for _ in range(self.n_sight_lines) ]
-        
+
+        self.network = Network([10,16,4,2])
 
     def move(self, track):
+
+        acceleration = self.network.forward(torch.cat((FloatTensor(self.distances),FloatTensor(self.velocity))))
+
+        print(acceleration)
+
+        self.velocity = self.dt * acceleration.detach().numpy()
 
         self.position += self.dt*self.velocity
 

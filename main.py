@@ -17,7 +17,7 @@ narrowness = 0.2
 track = Track(n_elements, narrowness, screen_size)
 
 timestep = 0.2
-n_agents = 5
+n_agents = 1
 agents = []
 alive_agents = list(np.arange(n_agents))
 for n in range(n_agents):

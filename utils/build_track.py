@@ -108,6 +108,8 @@ class Track():
 
     def construct_track(self, screen_size):
 
+        np.random.seed(12)
+
         self.orientation = 0
         self.curr_coords = [0,0]
         track = self.straight()
