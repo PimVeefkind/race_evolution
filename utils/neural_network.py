@@ -22,6 +22,6 @@ class Network(nn.Module):
             if not i == self.n_layers-1:
                 x = F.relu(x)
             else:
-                x = F.sigmoid(x)
+                x = torch.tanh(x) * 3
 
         return x

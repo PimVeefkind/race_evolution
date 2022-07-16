@@ -1,6 +1,7 @@
 import numpy as np
 
 import torch
+import torch.nn as nn
 from torch import FloatTensor
 
 from shapely.geometry import Point, LineString
@@ -10,7 +11,7 @@ from .neural_network import Network
 
 class Agent():
 
-    def __init__(self,n, start_pos, timestep):
+    def __init__(self,n, start_pos, timestep, means = None, stds = None):
 
         self.id = n
         self.is_dead = False
@@ -23,13 +24,16 @@ class Agent():
         self.distances = np.zeros(self.n_sight_lines)
         self.sight_lines = [ [] for _ in range(self.n_sight_lines) ]
 
-        self.network = Network([10,16,4,2])
+        self.neuron_structure = [10,16,4,2]
+        self.calculate_cumulative_neurons()
+        self.network = Network(self.neuron_structure)
+
+        if means != None and stds != None:
+            self.custom_initialize_weights(means, stds)
 
     def move(self, track):
 
         acceleration = self.network.forward(torch.cat((FloatTensor(self.distances),FloatTensor(self.velocity))))
-
-        print(acceleration)
 
         self.velocity = self.dt * acceleration.detach().numpy()
 
@@ -46,10 +50,7 @@ class Agent():
         ag_end = Point(self.position)
         pos_on_line, _ = nearest_points(track.center_line_shapely,ag_end)
 
-        #print(list(pos_on_line.coords)[0], self.position,list(track.center_line_shapely.coords))
         return(list(pos_on_line.coords)[0])
-        
-        
 
     def calculate_surroundings(self,track):
 
@@ -71,4 +72,26 @@ class Agent():
                 self.sight_lines[i] = [self.position,self.position+distance*direction]
             
             self.distances[i] = distance
-            
+
+    def calculate_cumulative_neurons(self):
+
+        self.cumulative_neurons = [0]
+        cumulative = 0
+        for i in range(len(self.neuron_structure)-1): 
+            layer_tot = self.neuron_structure[i]*self.neuron_structure[i+1]\
+                        +self.neuron_structure[i+1]
+            self.cumulative_neurons.append(layer_tot + cumulative)
+            cumulative += layer_tot
+    
+    def custom_initialize_weights(self, means, stds):
+
+        weights = torch.normal(mean=means, std = stds)
+        neur = self.neuron_structure
+
+        for i,layer in enumerate(self.network.layers):
+
+            start = self.cumulative_neurons[i]
+
+            layer_weight = torch.reshape(weights[start:start+neur[i]*neur[i+1]],(neur[i+1],neur[i]))
+            layer.weight = nn.Parameter(layer_weight)
+            layer.bias = nn.Parameter(weights[start+neur[i]*neur[i+1]:start+neur[i]*neur[i+1]+neur[i+1]])

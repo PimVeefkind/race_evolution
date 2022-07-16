@@ -71,7 +71,6 @@ class Track():
 
     def calculate_center_line(self, random_numb):
 
-        print(random_numb,self.orientation)
         if random_numb == -1:
 
             if self.orientation == 0:
