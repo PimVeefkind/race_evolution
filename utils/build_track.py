@@ -1,3 +1,4 @@
+from copy import deepcopy
 from shapely.geometry import Polygon, Point, LineString
 from shapely.affinity import rotate, scale, translate
 import matplotlib.pyplot as plt
@@ -112,6 +113,7 @@ class Track():
         self.orientation = 0
         self.curr_coords = [0,0]
         track = self.straight()
+        self.first_piece = deepcopy(track)
 
         self.curr_coords = [1,0]
         self.center_line = [np.array((0,0.5)),np.array((1,0.5))]
@@ -162,6 +164,10 @@ class Track():
 
         self.starting_position = translate(scale(Point(0.05,0.5),xfact=factor, yfact=factor, origin = track_centroid),\
              xoff= screen_size[0]/2,yoff = screen_size[1]/2)
+
+        self.first_piece = translate(scale(self.first_piece,xfact=factor, yfact=factor, origin = track_centroid),\
+             xoff= screen_size[0]/2,yoff = screen_size[1]/2).buffer(10)
+
 
         return track
 

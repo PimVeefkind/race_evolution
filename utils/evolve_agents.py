@@ -18,13 +18,15 @@ def evolve_agents(agents, track, timestep):
         final_scores.append(calculate_score(agent,track))
         weights[i,:] = get_weights(agent)
 
+    print(np.mean(final_scores))
+
     best_performers = np.argsort(final_scores)[len(agents)//2:]
     means = torch.mean(weights[best_performers,:], axis = 0)
     stds = torch.std(weights[best_performers,:], axis = 0)
 
     new_agents = []
 
-    print(np.mean(final_scores))
+    
     for i in range(len(agents)):
 
         new_agents.append(Agent(i,track.starting_position, timestep, means=means, stds=stds))
@@ -34,10 +36,16 @@ def evolve_agents(agents, track, timestep):
 def calculate_score(agent, track):
 
     ag_end = Point(agent.position)
-    pos_on_line, _ = nearest_points(track.center_line_shapely,ag_end,)
-    sub_line = split(track.center_line_shapely, pos_on_line)
-    
-    return(sub_line[0].length)
+
+    if agent.position[0] < track.starting_position.x:
+        if track.first_piece.contains(ag_end):
+            return 0
+    else:
+        pos_on_line, _ = nearest_points(track.center_line_shapely,ag_end,)
+        sub_lines = split(track.center_line_shapely, pos_on_line).geoms
+        for sub_line in sub_lines:
+            if sub_line.contains(track.starting_position):
+                return sub_line.length
 
 def get_weights(agent):
 

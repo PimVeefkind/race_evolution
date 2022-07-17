@@ -26,7 +26,7 @@ for n in range(n_agents):
 gameOn = True
 i = 0
 ep_number = 0
-max_iter = 3000
+max_iter = 1500
 
 while gameOn:
     for event in pygame.event.get():

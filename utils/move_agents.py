@@ -18,5 +18,6 @@ def move_agents(screen,track, agents, alive_agents):
         #    pygame.draw.line(screen, sight_color, new_sight[0],new_sight[1],1)
 
         pygame.draw.circle(screen, agent_color, agent.position, radius=3)
+        agent.on_center_line(track)
 
     return alive_agents
